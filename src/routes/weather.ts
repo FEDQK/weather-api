@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { WeatherForecast, WeatherService } from '../services/weather.service';
+import { weatherScheme } from '../schemas';
 
 interface IWeatherQuerystring {
   city: string;
@@ -13,57 +14,10 @@ interface IWeatherReply {
 export async function weatherRoutes(fastify: FastifyInstance) {
   const weatherService = new WeatherService();
 
-  fastify.get<{ Querystring: IWeatherQuerystring, Reply: IWeatherReply }>(
+  fastify.get<{ Querystring: IWeatherQuerystring; Reply: IWeatherReply }>(
     '/weather',
     {
-      schema: {
-        tags: ['weather'],
-        querystring: {
-          type: 'object',
-          properties: {
-            city: {
-              type: 'string',
-              description: 'City name for weather forecast',
-            },
-          },
-          required: ['city'],
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              temperature: {
-                type: 'number',
-                description: 'Current temperature',
-              },
-              humidity: {
-                type: 'number',
-                description: 'Current humidity percentage',
-              },
-              description: {
-                type: 'string',
-                description: 'Weather description',
-              },
-            },
-          },
-          400: {
-            type: 'object',
-            properties: {
-              message: {
-                type: 'string',
-              },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              message: {
-                type: 'string',
-              },
-            },
-          },
-        },
-      },
+      schema: weatherScheme,
     },
     async (request, reply) => {
       const { city } = request.query;

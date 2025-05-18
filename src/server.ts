@@ -1,6 +1,9 @@
 import fastify from 'fastify';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import staticFiles from '@fastify/static';
+import cors from '@fastify/cors';
+import path from 'path';
 import dotenv from 'dotenv';
 import { weatherRoutes, subscriptionRoutes } from './routes';
 
@@ -14,6 +17,16 @@ const server = fastify({
       keywords: ['example'],
     },
   },
+});
+
+server.register(cors, {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+});
+
+server.register(staticFiles, {
+  root: path.join(__dirname, '../public'),
+  prefix: '/',
 });
 
 server.register(swagger, {
