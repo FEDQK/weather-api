@@ -1,31 +1,35 @@
 import fastify from 'fastify';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import { weatherRoutes } from './routes/weather';
+import dotenv from 'dotenv';
+import { weatherRoutes, subscriptionRoutes } from './routes';
 
+dotenv.config();
+const prefix = '/api';
 const server = fastify({
   logger: true,
   ajv: {
     customOptions: {
       strict: false,
-      keywords: ['example']
-    }
-  }
+      keywords: ['example'],
+    },
+  },
 });
 
 server.register(swagger, {
   mode: 'static',
   specification: {
     path: './swagger.yaml',
-    baseDir: __dirname
-  }
+    baseDir: __dirname,
+  },
 });
 
 server.register(swaggerUi, {
-  routePrefix: '/documentation'
+  routePrefix: '/documentation',
 });
 
-server.register(weatherRoutes, { prefix: '/api' });
+server.register(weatherRoutes, { prefix });
+server.register(subscriptionRoutes, { prefix });
 
 const start = async () => {
   try {
