@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { SubscriptionService } from '../services/subscription.service';
 import { subscribeScheme, subscriptionConfirmScheme, unsubscribeScheme } from '../schemas';
+import { isValidEmail } from '../utils/validation';
 
+type Frequency = 'hourly' | 'daily';
 interface ISubscriptionBody {
   email: string;
   city: string;
-  frequency: 'hourly' | 'daily';
+  frequency: Frequency;
 }
 
 interface ISubscriptionReply {
@@ -26,11 +28,25 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const subscription = request.body;
+        let subscription = request.body;
 
-        const token = await subscriptionService.subscribe(subscription);
+        if (!subscription.email || !subscription.city || !subscription.frequency) {
+          throw new Error('Missing required fields');
+        }
+
+        if (!isValidEmail(subscription.email)) {
+          throw new Error('Invalid email format');
+        }
+
+        subscription = {
+          email: subscription.email.toLowerCase().trim(),
+          city: subscription.city.trim(),
+          frequency: subscription.frequency,
+        };
+
+        await subscriptionService.subscribe(subscription);
         fastify.log.info(
-          `Subscription: ${subscription.email} ${subscription.city} ${subscription.frequency} token: ${token}`,
+          `Subscription request: ${subscription.email} for ${subscription.city} (${subscription.frequency})`,
         );
         return {
           message: 'Subscription successful. Please check your email for confirmation.',
@@ -38,7 +54,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
       } catch (error) {
         if (error instanceof Error) {
           if (error.message === 'Email already subscribed') {
-            reply.code(409).send({ message: 'Email already subscribed' });
+            reply.code(409).send({ message: error.message });
           } else {
             reply.code(400).send({ message: error.message });
           }

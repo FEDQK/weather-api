@@ -1,20 +1,24 @@
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { EmailService } from './email.service';
 
-interface SubscriptionRequest {
+type Frequency = 'hourly' | 'daily';
+interface Subscription {
   email: string;
   city: string;
-  frequency: 'hourly' | 'daily';
+  frequency: Frequency;
 }
 
 export class SubscriptionService {
   private prisma: PrismaClient;
+  private emailService: EmailService;
 
   constructor() {
     this.prisma = new PrismaClient();
+    this.emailService = new EmailService();
   }
 
-  async subscribe(subscription: SubscriptionRequest): Promise<string> {
+  async subscribe(subscription: Subscription): Promise<string> {
     const existingSubscription = await this.prisma.subscription.findUnique({
       where: { email: subscription.email },
     });
@@ -41,6 +45,8 @@ export class SubscriptionService {
         },
       }),
     ]);
+
+    await this.emailService.sendSubscriptionConfirmation(subscription.email, token);
 
     return token;
   }
@@ -83,6 +89,8 @@ export class SubscriptionService {
         },
       }),
     ]);
+
+    await this.emailService.sendUnsubscribeConfirmation(confirmationToken.email, unsubscribeToken);
 
     return confirmationToken.email;
   }
