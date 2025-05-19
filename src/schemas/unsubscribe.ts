@@ -1,30 +1,24 @@
-export const weatherScheme = {
-  tags: ['weather'],
-  querystring: {
+export const unsubscribeScheme = {
+  tags: ['subscription'],
+  summary: 'Unsubscribe from weather updates',
+  description: 'Unsubscribes an email from weather updates using the token sent in emails.',
+  params: {
     type: 'object',
     properties: {
-      city: {
+      token: {
         type: 'string',
-        description: 'City name for weather forecast',
+        description: 'Unsubscribe token',
       },
     },
-    required: ['city'],
+    required: ['token'],
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        temperature: {
-          type: 'number',
-          description: 'Current temperature',
-        },
-        humidity: {
-          type: 'number',
-          description: 'Current humidity percentage',
-        },
-        description: {
+        message: {
           type: 'string',
-          description: 'Weather description',
+          description: 'Success message',
         },
       },
     },
@@ -33,6 +27,7 @@ export const weatherScheme = {
       properties: {
         message: {
           type: 'string',
+          description: 'Error message',
         },
       },
     },
@@ -41,6 +36,7 @@ export const weatherScheme = {
       properties: {
         message: {
           type: 'string',
+          description: 'Error message',
         },
       },
     },
